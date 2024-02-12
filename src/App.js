@@ -1,31 +1,53 @@
-import React from "react"
-import { Box, Text, Link, VStack, Code, Grid } from "@chakra-ui/react"
-import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { Logo } from "./Logo"
+import React, { useState } from 'react';
+import { ChakraProvider } from '@chakra-ui/react';
+import NameEntry from './components/NameEntry';
+import Bingo from './components/Bingo';
+import BingoChecker from './components/BingoChecker';
+import Leaderboard from './components/Leaderboard';
 
 function App() {
-  return (
-    <Box textAlign="center" fontSize="xl">
-      <Grid minH="100vh" p={3}>
-        <ColorModeSwitcher justifySelf="flex-end" />
-        <VStack spacing={8}>
-          <Logo h="40vmin" pointerEvents="none" />
-          <Text>
-            Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-          </Text>
-          <Link
-            color="teal.500"
-            href="https://chakra-ui.com"
-            fontSize="2xl"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn Chakra
-          </Link>
-        </VStack>
-      </Grid>
-    </Box>
-  )
+  const [name, setName] = useState(localStorage.getItem('name') ?? '');
+
+  const pathname = window.location.pathname;
+  const isStartPage = pathname === '/';
+  const isBingoPage = pathname === '/bingo';
+  const isLeaderboardPage = pathname === '/leaderboard';
+  const isSharedPage = pathname.startsWith('/shared/');
+
+  if (isStartPage && !name && !localStorage.getItem('name')) {
+    return (
+      <ChakraProvider>
+        <NameEntry onSaveName={stringName => (setName(stringName))} />
+      </ChakraProvider>
+    );
+  }
+
+  if (isBingoPage || (isStartPage && localStorage.getItem('name'))) {
+    return (
+      <ChakraProvider>
+        <Bingo />
+      </ChakraProvider>
+    );
+  }
+
+  if (isLeaderboardPage) {
+    return (
+      <ChakraProvider>
+        <Leaderboard />
+      </ChakraProvider>
+    );
+  }
+
+  if (isSharedPage) {
+    const markings = pathname.substring('/shared/'.length);
+    return (
+      <ChakraProvider>
+        <BingoChecker markings={markings} />
+      </ChakraProvider>
+    );
+  }
+
+  return <div>Page not found</div>;
 }
 
-export default App
+export default App;
